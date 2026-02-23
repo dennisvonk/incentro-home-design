@@ -1,0 +1,4 @@
+# Test 2 - furniture with multiple images of the same product
+
+The test case is to make the final render more accurate because we have foto's of the sofa from different sides.
+The final result is a 3D model of the sofa that can be viewed in a browser. The 3D model is created using photogrammetry, which is a technique that uses multiple images of an object to create a 3D model. The images are taken from different angles and the software uses the images to create a 3D model of the object. The more images you have, the more accurate the final model will be. In this case, we have multiple images of the sofa from different sides, which will help to create a more accurate 3D model.
