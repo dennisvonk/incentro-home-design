@@ -15,7 +15,7 @@ class LlmClient:
         self.client = genai.Client(api_key=self.config.llm_api_key)
 
 
-    def cleanup_images(self, room: Image) -> Image:
+    def remove_asset_from_image(self, room: Image) -> Image:
         """Sends the room image to the LLM to remove the existing furniture."""
         prompt = """
         Remove the sofa from the image. Create a clean, sharp, highres image with soft ambient lighting without changing the original image too much.
@@ -40,37 +40,47 @@ class LlmClient:
         raise RuntimeError("image cleanup failed")
 
 
-    def combine_images(self, original_room_image: Image, room_image_with_missing_asset: Image, asset_image: Image, room_dimensions: str, asset_dimensions: str) -> Image:
+    def combine_images(self, room_image_with_missing_asset: Image, asset_image: Image, room_dimensions: str, asset_dimensions: str, location_orientation_asset: str) -> Image:
         """
         Sends the room and furniture images to the LLM to combine them.
         """
 
         prompt = f"""
-        The goal is to replace the original sofa in image 1 with the new sofa of image 3.
+        The goal is to place a sofa (=image 2) in the living room (=image 1).
         
-        Step 1: Determine where the sofa is situated in the room.
-            For this step you use image 1 and use this image ONLY to determine where the original sofa is placed
-            Remember where to place the new sofa based on the location of the current location in the room.
+        Step 1: This is the information about the location and orientation of the new sofa:
+            {location_orientation_asset}
+            This information helps you place the sofa on the correct place in the living room.
         
-        Step 2: These are the dimensions of various assets in the living room in image 1: 
+        Step 2: These are the dimensions of various assets in the living room: 
             {room_dimensions}
-            DON'T use image 1 for anything else.
+            These dimensions help you determine the scale of the room and all other assets. 
         
-        Step 3: Place the new sofa
-            Create a new image based on image 2 and 3.
-            Image 3 is the new sofa that needs to be merged with image 2 on the correct place as determined in step 1. Make it look like the sofa was always there.
-            This sofa image must remain EXACTLY THE SAME, you are only allowed to scale it appropriately. 
-            Use the previously mentioned room dimensions and these dimensions of the sofa to scale correctly in the resulting image:
+        Step 3: These are the dimensions of the sofa:
             {asset_dimensions} 
-            Image 2 is used as a base to place the new sofa. Use this as the exact background environment for the image merge. 
-
-        Step 4: Add realistic shadows underneath the new sofa and highlights on the sofa are consistent with the sunlight in the scene. 
+            These dimensions of the sofa combined with the dimension of the assets in the living room help you determine the scale of the sofa.
+             
+        Step 4: Place the new sofa
+            Generate an image where the sofa is placed in the living room:
+            - on the location and orientation determined in step 1.
+            - scaled properly using the dimensions provided in step 2 and step 3.
+        
+        Step 5: Verify
+            Verify that the sofa in the new generated room looks exactly like the original provided sofa image.
+            
+        Step 6: Realism
+            Add realistic shadows underneath the new sofa and highlights on the sofa are consistent with the sunlight in the scene. 
+            
+        Rules:
+            - You are allowed to scale the sofa
+            - MAKE NO OTHER CHANGES TO THE SOFA
+            - Make no changes to the assets in the room
         """
         # add a try - raise 503 unavailable error if the LLM call fails, so we can retry in the image processor
         try:
             response = self.client.models.generate_content(
                 model=self.config.llm_model_name_image_processing,
-                contents=[prompt, original_room_image, room_image_with_missing_asset, asset_image],
+                contents=[prompt, room_image_with_missing_asset, asset_image],
                 config=types.GenerateContentConfig(
                     system_instruction="je bent een expert in image composition",
                     candidate_count=1,
@@ -114,3 +124,33 @@ class LlmClient:
                 dimensions = dimensions + part.text
 
         return dimensions
+
+    def get_asset_location_orientation(self, room_image) -> str:
+        prompt = """
+        Describe the location and the orientation of the sofa in the room.  
+        Use this format:
+            location: [location]
+            orientation: [orientation]
+
+        Rules:
+            - location: Don't describe the form or design of the sofa, just the place where the main part of the sofa is located in relation to other assets. 
+            - orientation: Don't describe the form or design of the sofa, just where the sofa is oriented to, in relation to the viewer.
+            - don't use any leading sentence, deliver the information in the format described.
+        """
+
+        response = self.client.models.generate_content(
+            model=self.config.llm_model_name_dimensions,
+            contents=[prompt, room_image],
+            config=types.GenerateContentConfig(
+                system_instruction="je bent een expert in image recognition",
+                candidate_count=1,
+                temperature=0
+            )
+        )
+
+        result = ""
+        for part in response.parts:
+            if part.text is not None:
+                result = result + part.text
+
+        return result

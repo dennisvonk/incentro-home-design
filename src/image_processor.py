@@ -30,11 +30,14 @@ class ImageProcessor:
         # step 1: determine dimensions in room
         room_dimensions = self.llm_client.get_asset_dimensions(room_image)
 
-        # step 2: remove furniture from room
-        cleaned_room_image = self.llm_client.cleanup_images(room_image)
+        # step 2: get the location and orientation of the asset
+        asset_location_orientation = self.llm_client.get_asset_dimensions(room_image)
 
-        # step 3: combine new furniture piece with room where old furniture piece is remove into one image
-        resulting_image = self.llm_client.combine_images(room_image, cleaned_room_image, furniture_img_path, room_dimensions, asset_dimensions)
+        # step 3: remove furniture from room
+        room_without_asset = self.llm_client.remove_asset_from_image(room_image)
+
+        # step 4: combine new furniture piece with room where old furniture piece is remove into one image
+        resulting_image = self.llm_client.combine_images(room_without_asset, furniture_img_path, room_dimensions, asset_dimensions, asset_location_orientation)
 
         return resulting_image
 
