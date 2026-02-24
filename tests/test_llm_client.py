@@ -53,29 +53,30 @@ class MyTestCase(unittest.TestCase):
         client = LlmClient(config)
 
         # cleanup old image
-        if os.path.exists(f'{config.output_path}\\room-without-sofa.png'):
-            os.remove(f'{config.output_path}\\room-without-sofa.png')
+        if os.path.exists(f'{config.output_path}\\room-without-asset.png'):
+            os.remove(f'{config.output_path}\\room-without-asset.png')
 
         # create input image object
         room_image_path = config.get_room_image_path("kamer.jpg")
         room_img = Image.open(room_image_path)
 
         # call llm client to remove the sofa from the image
-        image_without_sofa = client.remove_asset_from_image(room_img)
-        self.assertIsNotNone(image_without_sofa)
+        image_without_asset = client.remove_asset_from_image(room_img)
+        self.assertIsNotNone(image_without_asset)
 
         # save image for manual inspection
-        image_without_sofa.save(f'{config.output_path}\\room-without-sofa.png')
+        image_without_asset.save(f'{config.output_path}\\room-without-asset.png')
+        self.assertTrue(os.path.exists(f'{config.output_path}\\room-without-asset.png'))
 
 
-    def test_place_new_sofa_in_empty_room(self):
+    def test_place_new_asset_in_empty_room(self):
         # init
         config = Configuration("test-1")
         client = LlmClient(config)
 
         # load images
-        room_image_with_missing_asset = Image.open(f'{config.output_path}\\room-without-sofa.png')
-        sofa_image = Image.open(config.get_furniture_image_path('meubel.png'))
+        room_image_with_missing_asset = Image.open(f'{config.output_path}\\room-without-asset.png').getim()
+        asset_image = Image.open(config.get_asset_image_path('meubel.png')).getim()
 
         # define prompts
         room_dimensions = """
@@ -90,7 +91,7 @@ class MyTestCase(unittest.TestCase):
         wall art (square): area=2500 cm2, depth=3 cm, width=50 cm, height=50 cm
         pendant light: area=500 cm2, depth=10 cm, width=100 cm, height=50 cm (fixture only, not including cable length)
         """
-        sofa_dimensions = """
+        asset_dimensions = """
         Hoogte=80 cm
         Poot hoogte=2 cm
         Minimale zitdiepte=60 cm
@@ -100,26 +101,28 @@ class MyTestCase(unittest.TestCase):
         Breedte armleuning=30 cm
         Hoogte arm=50 cm
         """
-        sofa_location_orientation = """
+        asset_location_orientation = """
         location: The sofa is in the center of the room, in front of the wall with pictures and to the left of the fireplace.
         orientation: The sofa is facing towards the viewer.
         """
 
         try:
             # call llm client to combine the images
-            room_with_new_sofa = client.combine_images(room_image_with_missing_asset, sofa_image, room_dimensions, sofa_dimensions, sofa_location_orientation)
-            room_with_new_sofa.save(f'{config.output_path}\\room_with_new_sofa.png')
+            room_with_new_asset = client.combine_images(room_image_with_missing_asset, asset_image, room_dimensions, asset_dimensions, asset_location_orientation)
+            room_with_new_asset.save(f'{config.output_path}\\room_with_new_asset.png')
+            self.assertTrue(os.path.exists(f'{config.output_path}\\room_with_new_asset.png'))
+
         except LlmUnavailableError as e:
             self.fail(f"LLM failed to combine images: {e}")
 
-    def test_10x_place_new_sofa_in_empty_room(self):
+    def test_10x_place_new_asset_in_empty_room(self):
         # init
         config = Configuration("test-1")
         client = LlmClient(config)
 
         # load images
-        room_image_with_missing_asset = Image.open(f'{config.output_path}\\room-without-sofa.png')
-        sofa_image = Image.open(config.get_furniture_image_path('meubel.png'))
+        room_image_with_missing_asset = Image.open(f'{config.output_path}\\room-without-asset.png')
+        asset_image = Image.open(config.get_asset_image_path('meubel.png'))
 
         # define prompts
         room_dimensions = """
@@ -134,7 +137,7 @@ class MyTestCase(unittest.TestCase):
         wall art (square): area=2500 cm2, depth=3 cm, width=50 cm, height=50 cm
         pendant light: area=500 cm2, depth=10 cm, width=100 cm, height=50 cm (fixture only, not including cable length)
         """
-        sofa_dimensions = """
+        asset_dimensions = """
         Hoogte=80 cm
         Poot hoogte=2 cm
         Minimale zitdiepte=60 cm
@@ -144,7 +147,7 @@ class MyTestCase(unittest.TestCase):
         Breedte armleuning=30 cm
         Hoogte arm=50 cm
         """
-        sofa_location_orientation = """
+        asset_location_orientation = """
         location: The sofa is in the center of the room, in front of the wall with pictures and to the left of the fireplace.
         orientation: The sofa is facing towards the viewer.
         """
@@ -157,8 +160,8 @@ class MyTestCase(unittest.TestCase):
         for i in range(10):
             try:
                 # call llm client to combine the images
-                room_with_new_sofa = client.combine_images(room_image_with_missing_asset, sofa_image, room_dimensions, sofa_dimensions, sofa_location_orientation)
-                room_with_new_sofa.save(f'{config.output_path}\\loop\\room_with_new_sofa_{i}.png')
+                room_with_new_asset = client.combine_images(room_image_with_missing_asset, asset_image, room_dimensions, asset_dimensions, asset_location_orientation)
+                room_with_new_asset.save(f'{config.output_path}\\loop\\room_with_new_asset_{i}.png')
             except LlmUnavailableError as e:
                 self.fail(f"LLM failed to combine images: {e}")
 

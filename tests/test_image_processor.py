@@ -15,7 +15,7 @@ class MyTestCase(unittest.TestCase):
         processor = ImageProcessor(config, client)
 
         # prompts
-        sofa_dimensions = """
+        asset_dimensions = """
         Hoogte=80 cm
         Poot hoogte=2 cm
         Minimale zitdiepte=60 cm
@@ -28,19 +28,19 @@ class MyTestCase(unittest.TestCase):
 
 
         # cleanup old image
-        if os.path.exists(f'{config.output_path}\\room-without-sofa.png'):
-            os.remove(f'{config.output_path}\\room-without-sofa.png')
-        if os.path.exists(f'{config.output_path}\\room_with_new_sofa.png'):
-            os.remove(f'{config.output_path}\\room_with_new_sofa.png')
+        if os.path.exists(f'{config.output_path}\\room-without-asset.png'):
+            os.remove(f'{config.output_path}\\room-without-asset.png')
+        if os.path.exists(f'{config.output_path}\\room-with-new-asset.png'):
+            os.remove(f'{config.output_path}\\room-with-new-asset.png')
 
-        # call processor to insert the new sofa into room
-        room_with_new_sofa = processor.insert_furniture_into_room("meubel.png", "kamer.jpg", sofa_dimensions)
+        # call processor to insert the new asset into room
+        room_with_new_asset = processor.insert_asset_into_room("meubel.png", "kamer.jpg", asset_dimensions)
 
         # do checks
-        assert room_with_new_sofa is not None
+        assert room_with_new_asset is not None
 
         # save image for manual inspection
-        room_with_new_sofa.save(f'{config.output_path}\\room_with_new_sofa.png')
+        room_with_new_asset.save(f'{config.output_path}\\room-with-new-asset.png')
 
 
 if __name__ == '__main__':

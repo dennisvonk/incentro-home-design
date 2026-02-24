@@ -9,9 +9,9 @@ class MyTestCase(unittest.TestCase):
         config = Configuration("test-1")
         self.assertTrue(contains(config.get_room_image_path("kamer.jpg"), "tests\\resources\\test-1\\input\\room\\kamer.jpg"))
 
-    def test_get_furniture_image_path(self):
+    def test_get_asset_image_path(self):
         config = Configuration("test-1")
-        self.assertTrue(contains(config.get_furniture_image_path("meubel.jpg"), "tests\\resources\\test-1\\input\\furniture\\meubel.jpg"))
+        self.assertTrue(contains(config.get_asset_image_path("meubel.jpg"), "tests\\resources\\test-1\\input\\asset\\meubel.jpg"))
 
 if __name__ == '__main__':
     unittest.main()

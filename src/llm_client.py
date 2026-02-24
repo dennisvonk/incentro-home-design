@@ -1,6 +1,5 @@
 import google.genai as genai
 from google.genai import types
-# from google.genai.errors import ServerError
 
 from PIL import Image
 from google.api_core import exceptions
@@ -15,8 +14,24 @@ class LlmClient:
         self.client = genai.Client(api_key=self.config.llm_api_key)
 
 
-    def remove_asset_from_image(self, room: Image) -> Image:
-        """Sends the room image to the LLM to remove the existing furniture."""
+    def remove_asset_from_image(self, room):
+        """Removes an asset from an image using an LLM.
+
+        This method sends an image of a room to a generative AI model
+        and instructs it to remove a specific piece of furniture (e.g., a sofa).
+        The goal is to obtain a clean image with the furniture removed,
+        maintaining the original image's characteristics as much as possible.
+
+        Args:
+            room (Image): A PIL Image object of the room.
+
+        Returns:
+            Image: A PIL Image object with the specified asset removed.
+
+        Raises:
+            RuntimeError: If the image cleanup process fails.
+        """
+
         prompt = """
         Remove the sofa from the image. Create a clean, sharp, highres image with soft ambient lighting without changing the original image too much.
         """
@@ -40,9 +55,26 @@ class LlmClient:
         raise RuntimeError("image cleanup failed")
 
 
-    def combine_images(self, room_image_with_missing_asset: Image, asset_image: Image, room_dimensions: str, asset_dimensions: str, location_orientation_asset: str) -> Image:
+    def combine_images(self, room_image_with_missing_asset, asset_image, room_dimensions, asset_dimensions, location_orientation_asset):
         """
-        Sends the room and furniture images to the LLM to combine them.
+        Combines a room image with an asset image using a generative model.
+
+        This method instructs a generative AI model to place a given asset (e.g., a sofa)
+        into a room image. It uses detailed prompts that include dimensions, location,
+        and orientation to ensure the asset is scaled and placed realistically.
+
+        Args:
+            room_image_with_missing_asset (Image): A PIL Image of the room where the asset will be placed.
+            asset_image (Image): A PIL Image of the asset to place in the room.
+            room_dimensions (str): A string describing the dimensions of existing assets in the room.
+            asset_dimensions (str): A string describing the dimensions of the new asset.
+            location_orientation_asset (str): A string describing the desired location and orientation of the new asset.
+
+        Returns:
+            Image: A new PIL Image object showing the room with the asset placed inside.
+
+        Raises:
+            LlmUnavailableError: If the call to the generative AI model fails.
         """
 
         prompt = f"""
@@ -85,12 +117,9 @@ class LlmClient:
                     system_instruction="je bent een expert in image composition",
                     candidate_count=1,
                     temperature=0
-                    # response_mime_type="image/png"
                 )
             )
-        # except ServerError as e:
-        #     raise LlmUnavailableError from e
-        except exceptions.GoogleAPICallError as e:
+        except exceptions.GoogleAPICallError:
             raise LlmUnavailableError("LLM API call failed")
 
         print("Afbeelding succesvol gegenereerd!")
@@ -98,6 +127,21 @@ class LlmClient:
 
 
     def get_asset_dimensions(self, room_image) -> str:
+        """Estimates the dimensions of assets within an image.
+
+        This method sends an image to a generative AI model to analyze and
+        estimate the dimensions of all visible assets. The model is instructed
+        to return the depth, width, height, and area for each asset in a
+        specific format.
+
+        Args:
+            room_image (Image): A PIL Image object of the room containing assets.
+
+        Returns:
+            str: A formatted string listing each asset and its estimated dimensions in the format
+
+            [asset-name-1]: area=[area], depth=[depth], width=[width], height=[height]
+        """
         prompt = """
         Estimate the size of ALL the assets you see in the image.
         Most important size is the area that each asset takes up so this can be used in a later request to LLM to replace an asset in the image.
@@ -126,6 +170,22 @@ class LlmClient:
         return dimensions
 
     def get_asset_location_orientation(self, room_image) -> str:
+        """Determines the location and orientation of an asset in an image.
+
+        This method sends an image to a generative AI model to describe the
+        location and orientation of a specific asset (e.g., a sofa) within the room.
+        The model is instructed to return the information in a structured format.
+
+        Args:
+            room_image (Image): A PIL Image object of the room containing the asset.
+
+        Returns:
+            str: A formatted string describing the asset's location and orientation.
+
+            location: [location]
+
+            orientation: [orientation]
+        """
         prompt = """
         Describe the location and the orientation of the sofa in the room.  
         Use this format:
