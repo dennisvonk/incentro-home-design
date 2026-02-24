@@ -18,8 +18,8 @@ class LlmClient:
         """Removes an asset from an image using an LLM.
 
         This method sends an image of a room to a generative AI model
-        and instructs it to remove a specific piece of furniture (e.g., a sofa).
-        The goal is to obtain a clean image with the furniture removed,
+        and instructs it to remove a specific piece of asset (e.g., a sofa).
+        The goal is to obtain a clean image with the asset removed,
         maintaining the original image's characteristics as much as possible.
 
         Args:

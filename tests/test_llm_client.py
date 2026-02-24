@@ -75,8 +75,8 @@ class MyTestCase(unittest.TestCase):
         client = LlmClient(config)
 
         # load images
-        room_image_with_missing_asset = Image.open(f'{config.output_path}\\room-without-asset.png').getim()
-        asset_image = Image.open(config.get_asset_image_path('meubel.png')).getim()
+        room_image_with_missing_asset = Image.open(f'{config.output_path}\\room-without-asset.png')
+        asset_image = Image.open(config.get_asset_image_path('asset.png'))
 
         # define prompts
         room_dimensions = """
@@ -122,7 +122,7 @@ class MyTestCase(unittest.TestCase):
 
         # load images
         room_image_with_missing_asset = Image.open(f'{config.output_path}\\room-without-asset.png')
-        asset_image = Image.open(config.get_asset_image_path('meubel.png'))
+        asset_image = Image.open(config.get_asset_image_path('asset.png'))
 
         # define prompts
         room_dimensions = """

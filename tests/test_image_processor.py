@@ -7,8 +7,7 @@ from src.llm_client import LlmClient
 
 
 class MyTestCase(unittest.TestCase):
-    @staticmethod
-    def test_image_processing():
+    def test_image_processing(self):
         # init
         config = Configuration("test-1")
         client = LlmClient(config)
@@ -34,13 +33,14 @@ class MyTestCase(unittest.TestCase):
             os.remove(f'{config.output_path}\\room-with-new-asset.png')
 
         # call processor to insert the new asset into room
-        room_with_new_asset = processor.insert_asset_into_room("meubel.png", "kamer.jpg", asset_dimensions)
+        room_with_new_asset = processor.insert_asset_into_room("asset.png", "kamer.jpg", asset_dimensions)
 
         # do checks
         assert room_with_new_asset is not None
 
         # save image for manual inspection
         room_with_new_asset.save(f'{config.output_path}\\room-with-new-asset.png')
+        self.assertTrue(os.path.exists(f'{config.output_path}\\room-with-new-asset.png'))
 
 
 if __name__ == '__main__':

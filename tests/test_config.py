@@ -7,11 +7,11 @@ from src.config import Configuration
 class MyTestCase(unittest.TestCase):
     def test_get_room_image_path(self):
         config = Configuration("test-1")
-        self.assertTrue(contains(config.get_room_image_path("kamer.jpg"), "tests\\resources\\test-1\\input\\room\\kamer.jpg"))
+        self.assertTrue(contains(config.get_room_image_path("kamer.png"), "tests\\resources\\test-1\\input\\room\\kamer.png"))
 
     def test_get_asset_image_path(self):
         config = Configuration("test-1")
-        self.assertTrue(contains(config.get_asset_image_path("meubel.jpg"), "tests\\resources\\test-1\\input\\asset\\meubel.jpg"))
+        self.assertTrue(contains(config.get_asset_image_path("asset.png"), "tests\\resources\\test-1\\input\\asset\\asset.png"))
 
 if __name__ == '__main__':
     unittest.main()

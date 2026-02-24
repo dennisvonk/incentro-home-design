@@ -6,7 +6,7 @@ import os
 RESOURCE_FOLDER = "tests\\resources"
 
 class Configuration:
-    _furniture_path: str
+    _asset_path: str
     _room_path: str
     output_path: str
 
@@ -32,14 +32,14 @@ class Configuration:
         full_resources_path = resources_path if os.path.isabs(resources_path) else os.path.join(project_root, resources_path)
 
         print(f"Using resources path: {full_resources_path}")
-        self._furniture_path = os.path.join(full_resources_path, "input", "asset")
+        self._asset_path = os.path.join(full_resources_path, "input", "asset")
         self._room_path = os.path.join(full_resources_path, "input", "room")
 
         self.output_path = os.path.join(full_resources_path, "output")
 
 
     def get_asset_image_path(self, name: str) -> str:
-        return os.path.join(self._furniture_path, f"{name}")
+        return os.path.join(self._asset_path, f"{name}")
 
 
     def get_room_image_path(self, name: str) -> str:
