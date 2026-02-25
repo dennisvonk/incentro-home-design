@@ -6,3 +6,4 @@ __pycache__/
 #IntelliJ IDEA/
 *.iml
 .idea/
+output/
