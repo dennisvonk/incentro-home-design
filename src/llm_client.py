@@ -14,16 +14,17 @@ class LlmClient:
         self.client = genai.Client(api_key=self.config.llm_api_key)
 
 
-    def remove_asset_from_image(self, room):
+    def remove_asset_from_image(self, room, asset_name):
         """Removes an asset from an image using an LLM.
 
         This method sends an image of a room to a generative AI model
-        and instructs it to remove a specific piece of asset (e.g., a sofa).
+        and instructs it to remove a specific asset (e.g., a sofa).
         The goal is to obtain a clean image with the asset removed,
         maintaining the original image's characteristics as much as possible.
 
         Args:
             room (Image): A PIL Image object of the room.
+            asset_name (str): The name of the asset to be removed from the image.
 
         Returns:
             Image: A PIL Image object with the specified asset removed.
@@ -32,8 +33,25 @@ class LlmClient:
             RuntimeError: If the image cleanup process fails.
         """
 
-        prompt = """
-        Remove the sofa from the image. Create a clean, sharp, highres image with soft ambient lighting without changing the original image too much.
+        prompt = f"""
+        The goal is to remove the {asset_name} from the room image.
+        
+        Step 1: Identify the {asset_name}
+            Identify the {asset_name} in the image and understand its surroundings. 
+        
+        Step 2: Remove the {asset_name}
+            Remove the {asset_name} from the room. If there are any assets are attached to the {asset_name} also remove those.
+            
+        Step 3: Fill the gap
+             Fill the gap that is left after you removed the {asset_name} in a way that the image looks natural and realistic, as if the {asset_name} was never there.
+             Use the surroundings of the {asset_name} to fill the gap, so the style, lighting and texture of the original image is maintained as much as possible.
+
+        Step 4: Verify
+            Verify that the {asset_name} is completely removed and the image looks natural and realistic, as if the {asset_name} was never there. 
+            Make sure you didn't change anything else in the image except removing the {asset_name} and filling the gap that is left after you removed the {asset_name}.
+        
+        Rules:
+            - Make no changes to the other assets in the room
         """
 
         print(f"Cleanup the image with prompt:\n{prompt}")
@@ -49,7 +67,7 @@ class LlmClient:
         )
 
         if response.parts is not None:
-            print("Removed sofa from the image!")
+            print("Removed the {asset_name} from the image!")
             return response.parts[0].as_image()
 
         raise RuntimeError("image cleanup failed")
@@ -106,7 +124,7 @@ class LlmClient:
         Rules:
             - You are allowed to scale the sofa
             - MAKE NO OTHER CHANGES TO THE SOFA
-            - Make no changes to the assets in the room
+            - Make no changes to the other assets in the room
         """
         # add a try - raise 503 unavailable error if the LLM call fails, so we can retry in the image processor
         try:
@@ -169,8 +187,8 @@ class LlmClient:
 
         return dimensions
 
-    def get_asset_location_orientation(self, room_image) -> str:
-        """Determines the location and orientation of an asset in an image.
+    def get_asset_location_orientation(self, room_image, asset_name) -> str:
+        """Determines the location and orientation of a in an image.
 
         This method sends an image to a generative AI model to describe the
         location and orientation of a specific asset (e.g., a sofa) within the room.
@@ -178,6 +196,7 @@ class LlmClient:
 
         Args:
             room_image (Image): A PIL Image object of the room containing the asset.
+            asset_name (str): The name of the asset for which to determine location and orientation.
 
         Returns:
             str: A formatted string describing the asset's location and orientation.
@@ -186,15 +205,15 @@ class LlmClient:
 
             orientation: [orientation]
         """
-        prompt = """
-        Describe the location and the orientation of the sofa in the room.  
+        prompt = f"""
+        Describe the location and the orientation of the {asset_name} in the room.  
         Use this format:
             location: [location]
             orientation: [orientation]
 
         Rules:
-            - location: Don't describe the form or design of the sofa, just the place where the main part of the sofa is located in relation to other assets. 
-            - orientation: Don't describe the form or design of the sofa, just where the sofa is oriented to, in relation to the viewer.
+            - location: Don't describe the form or design of the {asset_name}, just the place where the main part of the {asset_name} is located in relation to other assets. 
+            - orientation: Don't describe the form or design of the {asset_name}, just where the sofa is oriented to, in relation to the viewer.
             - don't use any leading sentence, deliver the information in the format described.
         """
 

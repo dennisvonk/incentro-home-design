@@ -1,6 +1,12 @@
 import os
 import unittest
 
+# Load environment variables from gemini.env
+# IMPORTANT: make sure this is done before importing any module that relies on these environment variables (like Configuration or LlmClient)
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv('gemini.env'))
+############
+
 from src.config import Configuration
 from src.image_processor import ImageProcessor
 from src.llm_client import LlmClient
@@ -33,7 +39,7 @@ class MyTestCase(unittest.TestCase):
             os.remove(f'{config.output_path}\\room-with-new-asset.png')
 
         # call processor to insert the new asset into room
-        room_with_new_asset = processor.insert_asset_into_room("asset.png", "kamer.jpg", asset_dimensions)
+        room_with_new_asset = processor.insert_asset_into_room("asset.png", "room.jpg", asset_dimensions)
 
         # do checks
         assert room_with_new_asset is not None

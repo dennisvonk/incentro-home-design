@@ -19,7 +19,7 @@ class Configuration:
     """
     llm_model_name_image_processing = "models/nano-banana-pro-preview"     # hardcoded for now
     llm_model_name_dimensions = "gemini-2.5-flash-image"          # hardcoded for now
-    llm_api_key = "AIzaSyDUFkOhy-dVMxEoKM0yLJIFT3TujKyZVwc"     # hardcoded for now
+    llm_api_key = os.getenv("LLM_API_KEY")
 
     def __init__(self, resources_test_path: str):
         # Get the directory where this script is located

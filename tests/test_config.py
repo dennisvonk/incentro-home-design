@@ -7,7 +7,7 @@ from src.config import Configuration
 class MyTestCase(unittest.TestCase):
     def test_get_room_image_path(self):
         config = Configuration("test-1")
-        self.assertTrue(contains(config.get_room_image_path("kamer.png"), "tests\\resources\\test-1\\input\\room\\kamer.png"))
+        self.assertTrue(contains(config.get_room_image_path("room.jpg"), "tests\\resources\\test-1\\input\\room\\room.jpg"))
 
     def test_get_asset_image_path(self):
         config = Configuration("test-1")
